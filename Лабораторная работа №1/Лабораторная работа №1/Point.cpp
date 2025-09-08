@@ -1,11 +1,11 @@
 #include "Point.h"
 #include <Windows.h>
 
-// В Point.cpp находится реализация методов классов из Point.h
+// Р’ Point.cpp РЅР°С…РѕРґРёС‚СЃСЏ СЂРµР°Р»РёР·Р°С†РёСЏ РјРµС‚РѕРґРѕРІ РєР»Р°СЃСЃРѕРІ РёР· Point.h
 
 extern HDC hdc;
 
-// Реализация для Location
+// Р РµР°Р»РёР·Р°С†РёСЏ РґР»СЏ Location
 void Location::SetX(int NewX)
 {
     X = NewX;
@@ -27,7 +27,7 @@ Location::~Location() {}
 int Location::GetX() { return X; }
 int Location::GetY() { return Y; }
 
-// Реализация для Point
+// Р РµР°Р»РёР·Р°С†РёСЏ РґР»СЏ Point
 Point::Point(int InitX, int InitY) : Location(InitX, InitY)
 {
     visible = false;
@@ -35,8 +35,8 @@ Point::Point(int InitX, int InitY) : Location(InitX, InitY)
 
 Point::~Point() {}
 
-// То, что закомментировано - старая реализация точки
-// Использовать её нежелательно ввиду того, что точки видно не будет
+// РўРѕ, С‡С‚Рѕ Р·Р°РєРѕРјРјРµРЅС‚РёСЂРѕРІР°РЅРѕ - СЃС‚Р°СЂР°СЏ СЂРµР°Р»РёР·Р°С†РёСЏ С‚РѕС‡РєРё
+// РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РµС‘ РЅРµР¶РµР»Р°С‚РµР»СЊРЅРѕ РІРІРёРґСѓ С‚РѕРіРѕ, С‡С‚Рѕ С‚РѕС‡РєРё РІРёРґРЅРѕ РЅРµ Р±СѓРґРµС‚
 
 //void Point::Show()
 //{
@@ -53,7 +53,7 @@ Point::~Point() {}
 void Point::Show()
 {
     visible = true;
-    // Рисуем маленький круг вместо точки
+    // Р РёСЃСѓРµРј РјР°Р»РµРЅСЊРєРёР№ РєСЂСѓРі РІРјРµСЃС‚Рѕ С‚РѕС‡РєРё
     HPEN pen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
     SelectObject(hdc, pen);
     Ellipse(hdc, X - 3, Y - 3, X + 3, Y + 3);
@@ -63,7 +63,7 @@ void Point::Show()
 void Point::Hide()
 {
     visible = false;
-    // Стираем рисуя белым цветом (или цветом фона)
+    // РЎС‚РёСЂР°РµРј СЂРёСЃСѓСЏ Р±РµР»С‹Рј С†РІРµС‚РѕРј (РёР»Рё С†РІРµС‚РѕРј С„РѕРЅР°)
     HPEN pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));
     SelectObject(hdc, pen);
     Ellipse(hdc, X - 3, Y - 3, X + 3, Y + 3);
