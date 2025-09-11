@@ -12,4 +12,4 @@ endif()
 project ("Класс Graph")
 
 # Включите подпроекты.
-add_subdirectory ("Лабораторная работа №1")
+add_subdirectory ("ЛР1")
