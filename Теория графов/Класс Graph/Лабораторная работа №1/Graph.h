@@ -1,0 +1,37 @@
+﻿// В этом файле будет находится макет класса Graph
+
+#pragma once
+
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <utility>
+
+class Graph
+{
+private:
+	size_t count_vertex;
+	bool is_orient = false;
+
+	std::unordered_map<int, 
+		std::vector<
+		std::pair<int, int>>
+	> graph;
+
+public:
+	Graph();
+	Graph(const std::string& path, bool is_orient);
+	~Graph();
+
+	size_t size();
+	int weight(int u, int v);
+	bool is_edge(int u, int v);
+	void add_vertex(int u);
+	void add_edge(int u, int v, int w);
+	void list_of_edges();
+	void list_of_edges(int u);
+
+	// Специализация: 3b и 4b:
+	void FordBellman(int start);
+
+};
