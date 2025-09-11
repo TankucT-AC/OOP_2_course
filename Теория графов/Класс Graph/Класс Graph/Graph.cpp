@@ -1,39 +1,44 @@
 // Реализация методов класса Graph
 
 #include "Graph.h"
+#include <unordered_set>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <queue>
 
-Graph::Graph()
+Graph::Graph() : count_edges(0), count_vertex(0), is_orient(false)
 {
-	count_vertex = 0;
 	graph = {};
+}
+
+Graph::Graph(bool is_orient) : count_edges(0), count_vertex(0)
+{
+	graph = {};
+	this->is_orient = is_orient;
 }
 
 Graph::Graph(const std::string& path, bool is_orient)
 {
 	this->is_orient = is_orient;
+	count_vertex = 0;
+	count_edges = 0;
+	graph = {};
 
 	std::ifstream fin(path);
 	if (!fin.is_open())
 	{
 		std::cout << "WARNING: File is not found!\n";
-		count_vertex = 0;
-		graph = {};
 		return;
 	}
 
 	if (fin.peek() == EOF)
 	{
 		std::cout << "WARNING: File is empty!\n";
-		count_vertex = 0;
-		graph = {};
 		fin.close();
 		return;
 	}
 
-	count_vertex = 0;
 	std::string line;
 	while (std::getline(fin, line))
 	{
@@ -106,6 +111,7 @@ void Graph::add_edge(int u, int v, int w)
 	{
 		graph[u].push_back({ v, w });
 		if (!is_orient) graph[v].push_back({ u, w });
+		++count_edges;
 		return;
 	}
 
@@ -118,6 +124,7 @@ void Graph::add_edge(int u, int v, int w)
 			break;
 		}
 	}
+	++count_edges;
 
 	// Если граф ориентированный, то обновлять v->u нельзя
 	if (is_orient) return;
@@ -130,6 +137,7 @@ void Graph::add_edge(int u, int v, int w)
 			break;
 		}
 	}
+	++count_edges;
 }
 
 void Graph::list_of_edges(int u)
@@ -194,4 +202,48 @@ void Graph::FordBellman(int start)
 	{
 		std::cout << to << ": " << dist[to] << '\n';
 	}
+}
+
+Graph Graph::MST_Prim(int start)
+{
+	Graph MST(is_orient);
+	std::unordered_set<int> T;
+
+	std::priority_queue<std::pair<int, std::pair<int, int>>,
+		std::vector<
+			std::pair<int, std::pair<int, int>>
+		>,
+		std::greater<
+			std::pair<int, std::pair<int, int>>>
+	> pq;
+
+	for (const auto& [v, w] : graph[start])
+	{
+		pq.push({ w, {start, v} });
+	}
+	T.insert(start);
+
+	while (!pq.empty() && T.size() < count_edges)
+	{
+		auto curr = pq.top();
+		pq.pop();
+
+		int w = curr.first;
+		int u = curr.second.first;
+		int v = curr.second.second;
+
+		if (T.find(v) != T.end()) continue;
+
+		T.insert(v);
+		MST.add_edge(u, v, w);
+
+		for (const auto& [next_v, next_w] : graph[v])
+		{
+			if (T.find(next_v) != T.end()) continue;
+
+			pq.push({ next_w, {v, next_v} });
+		}
+	}
+
+	return MST;
 }

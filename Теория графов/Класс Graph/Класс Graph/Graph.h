@@ -11,7 +11,8 @@ class Graph
 {
 private:
 	size_t count_vertex;
-	bool is_orient = false;
+	size_t count_edges;
+	bool is_orient;
 
 	std::unordered_map<int, 
 		std::vector<
@@ -20,6 +21,7 @@ private:
 
 public:
 	Graph();
+	Graph(bool is_orient);
 	Graph(const std::string& path, bool is_orient);
 	~Graph();
 
@@ -33,5 +35,5 @@ public:
 
 	// Специализация: 3b и 4b:
 	void FordBellman(int start);
-
+	Graph MST_Prim(int start);
 };
