@@ -1,4 +1,4 @@
-// Реализация методов класса Graph
+// Р РµР°Р»РёР·Р°С†РёСЏ РјРµС‚РѕРґРѕРІ РєР»Р°СЃСЃР° Graph
 
 #include "Graph.h"
 #include <iostream>
@@ -41,14 +41,14 @@ Graph::Graph(const std::string& path, bool is_orient)
 		int u, v, w;
 		iss >> u >> v >> w;
 
-		// Проверка на то, что данных хватает в файле
+		// РџСЂРѕРІРµСЂРєР° РЅР° С‚Рѕ, С‡С‚Рѕ РґР°РЅРЅС‹С… С…РІР°С‚Р°РµС‚ РІ С„Р°Р№Р»Рµ
 		if (iss.fail()) 
 		{
 			graph.clear();
 			throw std::runtime_error("File data is not correct!"); 
 		}
 
-		// Проверка на избыток данных
+		// РџСЂРѕРІРµСЂРєР° РЅР° РёР·Р±С‹С‚РѕРє РґР°РЅРЅС‹С…
 		int temp;
 		iss >> temp;
 		if (!iss.fail()) 
@@ -101,7 +101,7 @@ void Graph::add_edge(int u, int v, int w)
 	add_vertex(u);
 	add_vertex(v);
 
-	// Если ребра не существует, то добавляем его и выходим
+	// Р•СЃР»Рё СЂРµР±СЂР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, С‚Рѕ РґРѕР±Р°РІР»СЏРµРј РµРіРѕ Рё РІС‹С…РѕРґРёРј
 	if (!is_edge(u, v))
 	{
 		graph[u].push_back({ v, w });
@@ -109,7 +109,7 @@ void Graph::add_edge(int u, int v, int w)
 		return;
 	}
 
-	// Если ребро есть, обновляем значение
+	// Р•СЃР»Рё СЂРµР±СЂРѕ РµСЃС‚СЊ, РѕР±РЅРѕРІР»СЏРµРј Р·РЅР°С‡РµРЅРёРµ
 	for (auto& [to, weight] : graph[u])
 	{
 		if (to == v)
@@ -119,7 +119,7 @@ void Graph::add_edge(int u, int v, int w)
 		}
 	}
 
-	// Если граф ориентированный, то обновлять v->u нельзя
+	// Р•СЃР»Рё РіСЂР°С„ РѕСЂРёРµРЅС‚РёСЂРѕРІР°РЅРЅС‹Р№, С‚Рѕ РѕР±РЅРѕРІР»СЏС‚СЊ v->u РЅРµР»СЊР·СЏ
 	if (is_orient) return;
 
 	for (auto& [to, weight] : graph[v])
