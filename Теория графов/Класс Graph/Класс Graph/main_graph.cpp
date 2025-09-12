@@ -4,8 +4,8 @@
 //const std::string FName = "Тесты/test1.txt"; // файл не существует
 //const std::string FName = "Тесты/test2.txt"; // файл пустой
 //const std::string FName = "Тесты/test3.txt"; // некорректные ребра (нехватка эл-ов)
-//const std::string FName = "Тесты/test4.txt"; // некорректные ребра (избыток эл-ов)
-const std::string FName = "Тесты/test1.1.txt"; 
+const std::string FName = "Тесты/test4.txt"; // некорректные ребра (избыток эл-ов)
+//const std::string FName = "Тесты/test1.1.txt"; 
 
 int main()
 {

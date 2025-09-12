@@ -71,24 +71,20 @@ Graph::~Graph()
 	graph.clear();
 }
 
-size_t Graph::size() { return count_vertex; }
+size_t Graph::size() const { return count_vertex; }
 
 int Graph::weight(int u, int v)
 {
-	for (const auto& [to, weight] : graph[u])
-	{
-		if (to == v) return weight;
-	}
+	if (is_edge(u, v)) 
+		return graph[u][v];
 
 	throw std::runtime_error("This edge is not found!");
 }
 
 bool Graph::is_edge(int u, int v)
 {
-	for (const auto& [to, _] : graph[u])
-	{
-		if (to == v) return true;
-	}
+	if (graph[u].find(v) != graph[u].end())
+		return true;
 
 	return false;
 }
@@ -106,38 +102,14 @@ void Graph::add_edge(int u, int v, int w)
 	add_vertex(u);
 	add_vertex(v);
 
-	// Если ребра не существует, то добавляем его и выходим
-	if (!is_edge(u, v))
-	{
-		graph[u].push_back({ v, w });
-		if (!is_orient) graph[v].push_back({ u, w });
-		++count_edges;
-		return;
-	}
+	graph[u][v] = w;
+	count_edges++;
 
-	// Если ребро есть, обновляем значение
-	for (auto& [to, weight] : graph[u])
+	if (!is_orient)
 	{
-		if (to == v)
-		{
-			weight = w;
-			break;
-		}
+		graph[v][u] = w;
+		count_edges++;
 	}
-	++count_edges;
-
-	// Если граф ориентированный, то обновлять v->u нельзя
-	if (is_orient) return;
-
-	for (auto& [to, weight] : graph[v])
-	{
-		if (to == u)
-		{
-			weight = w;
-			break;
-		}
-	}
-	++count_edges;
 }
 
 void Graph::list_of_edges(int u)

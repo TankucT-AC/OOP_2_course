@@ -4,8 +4,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <vector>
-#include <utility>
 
 class Graph
 {
@@ -14,10 +12,7 @@ private:
 	size_t count_edges;
 	bool is_orient;
 
-	std::unordered_map<int, 
-		std::vector<
-		std::pair<int, int>>
-	> graph;
+	std::unordered_map<int, std::unordered_map<int, int>> graph;
 
 public:
 	Graph();
@@ -25,7 +20,7 @@ public:
 	Graph(const std::string& path, bool is_orient);
 	~Graph();
 
-	size_t size();
+	size_t size() const;
 	int weight(int u, int v);
 	bool is_edge(int u, int v);
 	void add_vertex(int u);
