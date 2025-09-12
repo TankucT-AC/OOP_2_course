@@ -1,7 +1,4 @@
-﻿# CMakeList.txt: файл проекта CMake верхнего уровня; проведите глобальную конфигурацию
-# и включите сюда подпроекты.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.8)
 
 # Включение горячей перезагрузки для компиляторов MSVC, если поддерживается.
 if (POLICY CMP0141)
@@ -11,5 +8,5 @@ endif()
 
 project ("Класс Graph")
 
-# Включите подпроекты.
+# Подпроекты.
 add_subdirectory ("Класс Graph")
