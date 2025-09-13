@@ -3,6 +3,7 @@
 #include "Graph.h"
 #include <unordered_set>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <queue>
@@ -114,20 +115,29 @@ void Graph::add_edge(int u, int v, int w)
 
 void Graph::list_of_edges(int u)
 {
-	std::cout << u << ":\n  ";
-	for (const auto& [v, w] : graph[u])
+	std::cout << "Vertex " << u << " -> ";
+	if (graph[u].empty()) 
 	{
-		std::cout << "(" << v << ", " << w << ") ";
+		std::cout << "No edges\n";
+		return;
+	}
+
+	for (const auto& [v, w] : graph[u]) 
+	{
+		std::cout << v << "(" << w << ") ";
 	}
 	std::cout << std::endl;
 }
 
 void Graph::list_of_edges()
 {
-	for (const auto& [u, _] : graph)
+	std::cout << "Graph adjacency list:\n";
+	std::cout << "====================\n";
+	for (const auto& [u, _] : graph) 
 	{
 		list_of_edges(u);
 	}
+	std::cout << "====================\n";
 }
 
 void Graph::FordBellman(int start)
