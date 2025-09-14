@@ -19,7 +19,7 @@ Graph::Graph(bool is_orient) : count_edges(0), count_vertex(0)
 	this->is_orient = is_orient;
 }
 
-Graph::Graph(const std::string& path, bool is_orient)
+Graph::Graph(const std::wstring& path, bool is_orient)
 {
 	this->is_orient = is_orient;
 	count_vertex = 0;
@@ -131,6 +131,12 @@ void Graph::list_of_edges(int u)
 
 void Graph::list_of_edges()
 {
+	if (!count_vertex)
+	{
+		std::cout << "Graph is empty!\n";
+		return;
+	}
+
 	std::cout << "Graph adjacency list:\n";
 	std::cout << "====================\n";
 	for (const auto& [u, _] : graph) 
@@ -182,12 +188,17 @@ void Graph::FordBellman(int start)
 
 	for (const auto& [to, _] : graph)
 	{
-		std::cout << to << ": " << dist[to] << '\n';
+		std::cout << to << ": ";
+		if (dist[to] == MAX) std::cout << "No edges\n";
+		else std::cout << dist[to] << "\n";
 	}
 }
 
 Graph Graph::MST_Prim(int start)
 {
+	if (graph.find(start) == graph.end())
+		throw std::runtime_error("This start vertex is not found in graph!");
+
 	Graph MST(is_orient);
 	std::unordered_set<int> T;
 

@@ -17,7 +17,7 @@ private:
 public:
 	Graph();
 	Graph(bool is_orient);
-	Graph(const std::string& path, bool is_orient);
+	Graph(const std::wstring& path, bool is_orient);
 	~Graph();
 
 	size_t size() const;
