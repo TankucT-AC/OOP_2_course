@@ -13,11 +13,11 @@ ParallelsBoruvka
 │ ├── CMakeLists.txt
 │ ├── DSU.h
 │ └── DSU.cpp
-├── Graph/ # Базовый класс графа и алгоритм Борувки
+├── Graph/ # Базовый класс графа
 │ ├── CMakeLists.txt
 │ ├── Graph.h
 │ └── Graph.cpp
-├── ParallelsGraph/ # Параллельная реализация алгоритма
+├── ParallelsGraph/ # Дочерний класс с параллельной реализацией алгоритма 
 │ ├── CMakeLists.txt
 │ ├── ParallelsGraph.h
 │ └── ParallelsGraph.cpp
