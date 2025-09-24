@@ -18,6 +18,7 @@
 using namespace std;           // Пространство имен std
 
 #include "Point.h"  //поменять в соответствии с задачей
+#include "Camera.h"
 
 //макрос для определения кода нажатой клавиши
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
@@ -77,26 +78,49 @@ int main()
 //===============================================================
 //	М Е С Т О    В С Т А В К И
 
-    Point APoint(x0, y0);
-    APoint.Show();
-    getchar();
-
-    for (int i = 0; i < 6; ++i)
+    int command;
+    cin >> command;
+    if (command == 1)
     {
-        APoint.MoveTo(x0 + 50, y0 + 35 * i);
+        Point APoint(x0, y0);
+        APoint.Show();
 
-        //cout << "Press ENTER";
-        getchar();
-    }
-
-    while (true)
-    {
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < 6; ++i)
         {
-            APoint.MoveTo(x0 + 100 + i, y0 + i);
-            Sleep(50);
+            APoint.MoveTo(x0 + 50, y0 + 35 * i);
+
+            //cout << "Press ENTER";
+            getchar();
+        }
+
+        while (true)
+        {
+            for (int i = 0; i < 100; ++i)
+            {
+                APoint.MoveTo(x0 + 100 + i, y0 + i);
+                Sleep(50);
+            }
         }
     }
+    else if (command == 2)
+    {
+        Camera myCamera(x0, y0, Radius0);
+
+
+        myCamera.Show(); // Рисуем камеру со всеми элементами
+        getchar();
+        getchar();
+
+        myCamera.MoveTo(200, 150);
+
+        // Установка фокуса
+        myCamera.SetFocus(300, 200);
+
+        // Включение режимов
+        myCamera.ToggleActive();
+        myCamera.StartRecording();
+    }
+    
 
     cout << "\nExample ExOOP_0x DONE   \7\n";
 

@@ -1,5 +1,5 @@
 #include "Point.h"
-#include <Windows.h>
+#include <windows.h>
 
 // В Point.cpp находится реализация методов классов из Point.h
 
@@ -76,4 +76,61 @@ void Point::MoveTo(int NewX, int NewY)
     X = NewX;
     Y = NewY;
     Show();
+}
+
+int Point::GetX() { return X; }
+int Point::GetY() { return Y; }
+
+void Point::SetX(int NewX) { X = NewX; }
+void Point::SetY(int NewY) { Y = NewY; }
+
+// Реализация для Circle
+Circle::Circle(int InitX, int InitY, int InitRad) : Point(InitX, InitY)
+{
+    radius = InitRad;
+}
+
+Circle::~Circle() {}
+
+void Circle::Show()
+{
+    visible = true;
+    // Создаем красное перо и кисть
+    HPEN redPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+    HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
+
+    // Просто выбираем новые объекты
+    SelectObject(hdc, redPen);
+    SelectObject(hdc, redBrush);
+
+    // Рисуем
+    Ellipse(hdc, X - radius, Y - radius, X + radius, Y + radius);
+
+    // Удаляем объекты
+    DeleteObject(redPen);
+    DeleteObject(redBrush);
+}
+
+void Circle::Hide() 
+{
+    visible = false;
+    // Стираем рисуя белым цветом (или цветом фона)
+    HPEN clearPen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));
+    HBRUSH clearBrush = CreateSolidBrush(RGB(255, 255, 255));
+
+    // Просто выбираем новые объекты
+    SelectObject(hdc, clearPen);
+    SelectObject(hdc, clearBrush);
+
+    // Рисуем
+    Ellipse(hdc, X - radius, Y - radius, X + radius, Y + radius);
+
+    // Удаляем объекты
+    DeleteObject(clearPen);
+    DeleteObject(clearBrush);
+}
+
+void Circle::EditRadius(int NewRadius)
+{
+    radius -= NewRadius;
 }
