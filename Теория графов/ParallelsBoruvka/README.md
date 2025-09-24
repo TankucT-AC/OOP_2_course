@@ -67,8 +67,8 @@ cmake --build .
 
 4. Запустите исполняемый файл
 
-### Потенциальные баги:
+## Потенциальные баги:
 
-- Для пользователей Windows OS:
+### Для пользователей Windows OS:
 
-Если во время компиляции программа не увидела tbb12_debug.dll/tbb12.dll, то просто из C:\Program Files (x86)\Intel\oneAPI\tbb\latest\bin подкиньте его к экзешнику
+- Если во время компиляции программа не увидела tbb12_debug.dll/tbb12.dll, то просто из C:\Program Files (x86)\Intel\oneAPI\tbb\latest\bin подкиньте его к экзешнику
