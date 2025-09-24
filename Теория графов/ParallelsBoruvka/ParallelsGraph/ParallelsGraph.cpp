@@ -25,7 +25,6 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
             {
                 for (size_t i = range.begin(); i != range.end(); ++i)
                 {
-                    // Получаем итератор к i-ой вершине
                     auto it = graph.begin();
                     std::advance(it, i);
                     int v = it->first;
@@ -38,13 +37,10 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
 
                         if (comp_u == comp_v) continue;
 
-                        // Безопасное обновление минимальных ребер
                         tbb::concurrent_hash_map<int, tbb::concurrent_vector<int>>::accessor acc;
 
-                        // Для компоненты comp_u
                         if (min_edges.find(acc, comp_u))
                         {
-                            // Сравниваем с текущим минимальным ребром
                             if (w < acc->second[2])
                             {
                                 acc->second[0] = u;
@@ -54,7 +50,6 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
                         }
                         else
                         {
-                            // Вставляем новое ребро
                             tbb::concurrent_vector<int> new_edge;
                             new_edge.push_back(u);
                             new_edge.push_back(v);
@@ -63,7 +58,6 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
                         }
                         acc.release();
 
-                        // Для компоненты comp_v
                         if (min_edges.find(acc, comp_v))
                         {
                             if (w < acc->second[2])
@@ -90,7 +84,6 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
         });
         
 
-        // Последовательно добавляем ребра в MST (этап должен быть последовательным)
         std::vector<std::tuple<int, int, int>> edges_to_add;
 
         for (auto it = min_edges.begin(); it != min_edges.end(); ++it) {
@@ -111,7 +104,6 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
             }
         }
 
-        // Добавляем ребра и объединяем компоненты
         for (auto& [u, v, w] : edges_to_add) {
             int comp_u = dsu.find_set(u);
             int comp_v = dsu.find_set(v);
