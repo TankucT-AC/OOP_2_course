@@ -12,78 +12,56 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
     if (is_orient) 
         throw std::runtime_error("The algorithm searches for a MST only in an undirected graph!");
 
-    Graph& ref_this = *this;
-    DSU dsu(ref_this);
+    DSU dsu(*this);
     ParallelsGraph MST(is_orient);
 
+    // local_arena нужна для ограничения потоков
     tbb::task_arena local_arena(thread_count);
+
     tbb::concurrent_hash_map<int, tbb::concurrent_vector<int>> min_edges;
 
     while (dsu.count() > 1)
     {
-        auto concurrent_min_edges_processing = [&](const tbb::blocked_range<size_t>& range)
+        // Лямбда-функция для параллельного добавления минимальных ребер
+        auto concurrent_min_edges_processing = [&](const auto& vertex_pair) 
+        {
+            int v = vertex_pair.first;
+            const auto& edges = vertex_pair.second;
+
+            for (const auto& [u, w] : edges)
             {
-                for (size_t i = range.begin(); i != range.end(); ++i)
-                {
-                    auto it = graph.begin();
-                    std::advance(it, i);
-                    int v = it->first;
-                    auto& edges = it->second;
+                int comp_u = dsu.find_set(u);
+                int comp_v = dsu.find_set(v);
 
-                    for (auto& [u, w] : edges)
-                    {
-                        int comp_u = dsu.find_set(u);
-                        int comp_v = dsu.find_set(v);
+                if (comp_u == comp_v) continue;
 
-                        if (comp_u == comp_v) continue;
+                // Функция для атомарного обновления минимального ребра
+                auto update_min_edge = [&](int comp) {
+                    tbb::concurrent_hash_map<int, tbb::concurrent_vector<int>>::accessor acc;
 
-                        tbb::concurrent_hash_map<int, tbb::concurrent_vector<int>>::accessor acc;
-
-                        if (min_edges.find(acc, comp_u))
-                        {
-                            if (w < acc->second[2])
-                            {
-                                acc->second[0] = u;
-                                acc->second[1] = v;
-                                acc->second[2] = w;
-                            }
-                        }
-                        else
-                        {
-                            tbb::concurrent_vector<int> new_edge;
-                            new_edge.push_back(u);
-                            new_edge.push_back(v);
-                            new_edge.push_back(w);
-                            min_edges.insert({ comp_u, new_edge });
-                        }
-                        acc.release();
-
-                        if (min_edges.find(acc, comp_v))
-                        {
-                            if (w < acc->second[2])
-                            {
-                                acc->second[0] = u;
-                                acc->second[1] = v;
-                                acc->second[2] = w;
-                            }
-                        }
-                        else
-                        {
-                            tbb::concurrent_vector<int> new_edge;
-                            new_edge.push_back(u);
-                            new_edge.push_back(v);
-                            new_edge.push_back(w);
-                            min_edges.insert({ comp_v, new_edge });
+                    if (min_edges.insert(acc, comp)) {
+                        acc->second = { u, v, w };
+                    }
+                    else {
+                        if (w < acc->second[2]) {
+                            acc->second[0] = u;
+                            acc->second[1] = v;
+                            acc->second[2] = w;
                         }
                     }
-                }
-            };
+                };
 
+                update_min_edge(comp_u);
+                update_min_edge(comp_v);
+            }
+        };
+
+        // Параллельно вычисляем минимальные ребра с строго ограниченным пулом потоков
         local_arena.execute([&] {
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, graph.size()), concurrent_min_edges_processing);
+            tbb::parallel_for_each(graph.begin(), graph.end(), concurrent_min_edges_processing);
         });
         
-
+        // Остальное параллелить нет смыслы :)
         std::vector<std::tuple<int, int, int>> edges_to_add;
 
         for (auto it = min_edges.begin(); it != min_edges.end(); ++it) {

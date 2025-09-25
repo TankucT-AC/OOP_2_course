@@ -1,14 +1,19 @@
 #pragma once
 
 #include "Graph.h"
+
 #include <unordered_map>
+#include <atomic>
+#include <mutex>
 
 class DSU
 {
 private:
+	mutable std::mutex mtx;
+
 	std::unordered_map<int, int> parent;
 	std::unordered_map<int, int> rank;
-	int components_count;
+	std::atomic<int> components_count = 0;
 public:
 	DSU(const Graph& graph);
 
