@@ -1,30 +1,54 @@
-// Реализация методов класса Graph
-
 #include "Graph.h"
 #include <unordered_set>
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <queue>
 
-Graph::Graph() : count_edges(0), count_vertex(0), is_orient(false)
+// ПРИВАТНЫЕ МЕТОДЫ:
+
+// Обход графа в глубину
+void Graph::dfs(int u, std::unordered_set<int>& used)
 {
-	graph = {};
+	used.insert(u);
+	for (const auto& [v, w] : graph[u])
+	{
+		if (used.find(v) == used.end())
+			dfs(v, used);
+	}
 }
+
+// Проверка связности неориентированного графа
+bool Graph::isOnlyCC()
+{
+	std::unordered_set<int> used;
+	auto count = 0;
+	for (const auto& [u, edge] : graph)
+	{
+		if (used.find(u) == used.end())
+		{
+			dfs(u, used);
+			++count;
+		}
+
+		if (count > 1) return false;
+	}
+
+	return true;
+}
+
+// ПУБЛИЧНЫЕ МЕТОДЫ:
+
+Graph::Graph() : count_edges(0), count_vertex(0), is_orient(false) {}
 
 Graph::Graph(bool is_orient) : count_edges(0), count_vertex(0)
 {
-	graph = {};
 	this->is_orient = is_orient;
 }
 
-Graph::Graph(const std::wstring& path, bool is_orient)
+Graph::Graph(const std::wstring& path, bool is_orient) : count_edges(0), count_vertex(0)
 {
 	this->is_orient = is_orient;
-	count_vertex = 0;
-	count_edges = 0;
-	graph = {};
 
 	std::ifstream fin(path);
 	if (!fin.is_open())
@@ -67,13 +91,12 @@ Graph::Graph(const std::wstring& path, bool is_orient)
 	}
 }
 
-Graph::~Graph() 
-{
-	graph.clear();
-}
+Graph::~Graph() {}
 
+// Возвращает размер графа (т.е. количество вершин)
 size_t Graph::size() const { return count_vertex; }
 
+// Возвращает вес ребра
 int Graph::weight(int u, int v)
 {
 	if (is_edge(u, v)) 
@@ -82,6 +105,7 @@ int Graph::weight(int u, int v)
 	throw std::runtime_error("This edge is not found!");
 }
 
+// Проверка на существование ребра в графе
 bool Graph::is_edge(int u, int v)
 {
 	if (graph[u].find(v) != graph[u].end())
@@ -90,6 +114,7 @@ bool Graph::is_edge(int u, int v)
 	return false;
 }
 
+// Добавление вершины в граф
 void Graph::add_vertex(int u)
 {
 	if (graph.find(u) != graph.end()) return;
@@ -98,6 +123,7 @@ void Graph::add_vertex(int u)
 	++count_vertex;
 }
 
+// Добавление ребра в графе
 void Graph::add_edge(int u, int v, int w)
 {
 	add_vertex(u);
@@ -113,6 +139,7 @@ void Graph::add_edge(int u, int v, int w)
 	}
 }
 
+// Вывод списка ребер, инцидентных вершине
 void Graph::list_of_edges(int u)
 {
 	std::cout << "Vertex " << u << " -> ";
@@ -129,6 +156,7 @@ void Graph::list_of_edges(int u)
 	std::cout << std::endl;
 }
 
+// Вывод списка всех ребер
 void Graph::list_of_edges()
 {
 	if (!count_vertex)
@@ -146,18 +174,21 @@ void Graph::list_of_edges()
 	std::cout << "====================\n";
 }
 
+// Алгоритм Форда-Белламана для поиска 
+// наикратчайшего расстояния между двумя вершинами
 void Graph::FordBellman(int start)
 {
 	if (graph.find(start) == graph.end()) 
 		throw std::runtime_error("This start vertex is not found in graph!");
 
-	const int MAX = 1e9;
+	const int INF = 1e9;
 
 	struct Edge
 	{
 		int u, v, w;
 	};
 
+	// Создаем список ребер
 	std::vector<Edge> edges;
 	for (const auto& [u, eds] : graph)
 	{
@@ -170,7 +201,7 @@ void Graph::FordBellman(int start)
 	std::unordered_map<int, int> dist;
 	for (const auto& [to, _] : graph)
 	{
-		dist[to] = MAX;
+		dist[to] = INF;
 	}
 	dist[start] = 0;
 
@@ -178,10 +209,10 @@ void Graph::FordBellman(int start)
 	{
 		for (const auto& [u, v, w] : edges)
 		{
-			if (dist[u] != MAX && dist[v] > dist[u] + w)
+			if (dist[u] != INF && dist[v] > dist[u] + w)
 				dist[v] = dist[u] + w;
 
-			if (!is_orient && dist[v] != MAX && dist[u] > dist[v] + w)
+			if (!is_orient && dist[v] != INF && dist[u] > dist[v] + w)
 				dist[u] = dist[v] + w;
 		}
 	}
@@ -189,19 +220,22 @@ void Graph::FordBellman(int start)
 	for (const auto& [to, _] : graph)
 	{
 		std::cout << to << ": ";
-		if (dist[to] == MAX) std::cout << "No edges\n";
+		if (dist[to] == INF) std::cout << "No edges\n";
 		else std::cout << dist[to] << "\n";
 	}
 }
 
-Graph Graph::MST_Prim(int start)
+// Поиск минимального остовного дерева в неориентированном графе
+Graph Graph::MST_Prim()
 {
-	if (graph.find(start) == graph.end())
-		throw std::runtime_error("This start vertex is not found in graph!");
+	if (is_orient) throw std::runtime_error("This graph is directed!");
+	if (count_vertex == 0) throw std::runtime_error("This graph is empty!");
+	if (!isOnlyCC()) throw std::runtime_error("This graph is not connected!");
 
 	Graph MST(is_orient);
 	std::unordered_set<int> T;
 
+	auto start = graph.begin()->first;
 	std::priority_queue<std::pair<int, std::pair<int, int>>,
 		std::vector<
 			std::pair<int, std::pair<int, int>>
@@ -210,6 +244,7 @@ Graph Graph::MST_Prim(int start)
 			std::pair<int, std::pair<int, int>>>
 	> pq;
 
+	// инициализация минимальной кучи
 	for (const auto& [v, w] : graph[start])
 	{
 		pq.push({ w, {start, v} });

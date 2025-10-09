@@ -4,6 +4,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 class Graph
 {
@@ -13,6 +14,9 @@ private:
 	bool is_orient;
 
 	std::unordered_map<int, std::unordered_map<int, int>> graph;
+
+	void dfs(int u, std::unordered_set<int>& used);
+	bool isOnlyCC();
 
 public:
 	Graph();
@@ -30,5 +34,5 @@ public:
 
 	// Специализация: 3b и 4b:
 	void FordBellman(int start);
-	Graph MST_Prim(int start);
+	Graph MST_Prim();
 };

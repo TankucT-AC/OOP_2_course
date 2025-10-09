@@ -44,9 +44,7 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
                     }
                     else {
                         if (w < acc->second[2]) {
-                            acc->second[0] = u;
-                            acc->second[1] = v;
-                            acc->second[2] = w;
+                            acc->second = { u, v, w };
                         }
                     }
                 };

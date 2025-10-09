@@ -114,8 +114,7 @@ static void handleFordBellman(Graph& graph)
 
 static void handlePrimMST(Graph& graph) 
 {
-    int start = getIntInput("Start vertex: ");
-    Graph mst = graph.MST_Prim(start);
+    Graph mst = graph.MST_Prim();
     std::cout << "Minimum Spanning Tree:\n";
     mst.list_of_edges();
 }
