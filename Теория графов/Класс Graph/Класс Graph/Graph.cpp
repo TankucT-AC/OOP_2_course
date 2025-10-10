@@ -217,6 +217,17 @@ void Graph::FordBellman(int start)
 		}
 	}
 
+	// Проверка на наличие отрицательного цикла:
+	for (const auto& [u, v, w] : edges)
+	{
+		if (dist[u] != INF && dist[v] > dist[u] + w)
+			throw std::runtime_error("There is a negative cycle in the graph!");
+
+		if (!is_orient && dist[v] != INF && dist[u] > dist[v] + w)
+			throw std::runtime_error("There is a negative cycle in the graph!");
+	}
+
+	// Вывод графа
 	for (const auto& [to, _] : graph)
 	{
 		std::cout << to << ": ";
