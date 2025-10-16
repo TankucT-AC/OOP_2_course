@@ -2,18 +2,66 @@
 #include "DSU.h"
 
 #include <tbb/tbb.h>
+#include <fstream>
+#include <iostream>
 
 ParallelsGraph::ParallelsGraph() : Graph() {}
-ParallelsGraph::ParallelsGraph(bool is_orient) : Graph(is_orient) {}
-ParallelsGraph::ParallelsGraph(const std::wstring& path, bool is_orient) : Graph(path, is_orient) {}
 
-ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
+ParallelsGraph::ParallelsGraph(bool is_orient, int init_thread_count) : Graph(is_orient) 
 {
-    if (is_orient) 
-        throw std::runtime_error("The algorithm searches for a MST only in an undirected graph!");
+    thread_count = init_thread_count;
+}
 
+ParallelsGraph::ParallelsGraph(const std::string& path, bool is_orient, int init_thread_count) : Graph(path, is_orient) 
+{
+    thread_count = init_thread_count;
+}
+
+void ParallelsGraph::write_graph(const std::string& out)
+{
+    std::ofstream outFile(out);
+    outFile << "Opening hours: " << duration.count() << " .ns" << "\n";
+    outFile << "Threads count: " << thread_count << "\n";
+    outFile << "Edges sum: " << edges_sum << "\n\n";
+
+    std::unordered_map<int, std::unordered_set<int>> used;
+    for (const auto& [u, edges] : graph)
+    {
+        if (used.find(u) == used.end()) used[u] = {};
+        for (const auto& [v, w] : edges)
+        {
+            if (used[u].find(v) == used[u].end())
+            {
+                outFile << u << " " << v << " " << w << "\n";
+                used[u].insert(v);
+                used[v].insert(u);
+            }
+        }
+    }
+    outFile.close();
+}
+
+void ParallelsGraph::SetEdgesSum(int new_sum)
+{
+    edges_sum = new_sum;
+}
+
+void ParallelsGraph::SetDuration(std::chrono::microseconds new_duration)
+{
+    duration = new_duration;
+}
+
+ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
+{
+
+    if (is_orient) throw std::runtime_error("This graph is directed!");
+    if (count_vertex == 0) throw std::runtime_error("This graph is empty!");
+    if (!isOnlyCC()) throw std::runtime_error("This graph is not connected!");
+
+    auto start = std::chrono::high_resolution_clock::now();
     DSU dsu(*this);
-    ParallelsGraph MST(is_orient);
+    ParallelsGraph MST(is_orient, thread_count);
+    int curr_MST_edges_sum = 0;
 
     // local_arena нужна для ограничения потоков
     tbb::task_arena local_arena(thread_count);
@@ -59,7 +107,7 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
             tbb::parallel_for_each(graph.begin(), graph.end(), concurrent_min_edges_processing);
         });
         
-        // Остальное параллелить нет смыслы :)
+        // Остальное параллелить нет смысла :)
         std::vector<std::tuple<int, int, int>> edges_to_add;
 
         for (auto it = min_edges.begin(); it != min_edges.end(); ++it) {
@@ -86,12 +134,20 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels(int start)
 
             if (comp_u != comp_v) {
                 MST.add_edge(u, v, w);
+                curr_MST_edges_sum += w;
                 dsu.union_sets(comp_u, comp_v);
             }
         }
 
         min_edges.clear();
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    // Замерили время работы функции
+    auto new_duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    MST.SetDuration(new_duration);
+    MST.SetEdgesSum(curr_MST_edges_sum);
 
     return MST;
 }

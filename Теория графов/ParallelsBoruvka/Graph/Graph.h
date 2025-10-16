@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 class Graph
 {
@@ -12,10 +13,13 @@ protected:
 
 	std::unordered_map<int, std::unordered_map<int, int>> graph;
 
+	void dfs(int u, std::unordered_set<int>& used);
+	bool isOnlyCC();
+
 public:
 	Graph();
 	Graph(bool is_orient);
-	Graph(const std::wstring& path, bool is_orient);
+	Graph(const std::string& path, bool is_orient);
 	~Graph();
 
 	size_t size() const;
@@ -27,6 +31,7 @@ public:
 	void list_of_edges(int u);
 	std::vector<int> list_of_vertex() const;
 
+	// Специализация: 3b и 4b:
 	void FordBellman(int start);
-	Graph MST_Prim(int start);
+	Graph MST_Prim();
 };
