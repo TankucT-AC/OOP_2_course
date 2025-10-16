@@ -114,8 +114,6 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
             int comp_id = it->first;
             auto& edge_vec = it->second;
 
-            if (edge_vec.size() < 3) continue;
-
             int u = edge_vec[0];
             int v = edge_vec[1];
             int w = edge_vec[2];
