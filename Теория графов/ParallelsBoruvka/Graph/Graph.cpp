@@ -5,9 +5,8 @@
 #include <sstream>
 #include <queue>
 
-// ПРИВАТНЫЕ МЕТОДЫ:
+// РЇ РєР»Р°СЃС‚СЊ С…РѕС‚РµР» РЅР° РїСЂРёРЅС†РёРї DRY, СѓР¶ РёР·РІРёРЅРёС‚Рµ
 
-// Обход графа в глубину
 void Graph::dfs(int u, std::unordered_set<int>& used)
 {
 	used.insert(u);
@@ -18,7 +17,6 @@ void Graph::dfs(int u, std::unordered_set<int>& used)
 	}
 }
 
-// Проверка связности неориентированного графа
 bool Graph::isOnlyCC()
 {
 	std::unordered_set<int> used;
@@ -37,7 +35,6 @@ bool Graph::isOnlyCC()
 	return true;
 }
 
-// ПУБЛИЧНЫЕ МЕТОДЫ:
 
 Graph::Graph() : count_edges(0), count_vertex(0), is_orient(false) {}
 
@@ -69,14 +66,12 @@ Graph::Graph(const std::string& path, bool is_orient) : count_edges(0), count_ve
 		int u, v, w;
 		iss >> u >> v >> w;
 
-		// Проверка на то, что данных хватает в файле
 		if (iss.fail())
 		{
 			graph.clear();
 			throw std::runtime_error("File data is not correct!");
 		}
 
-		// Проверка на избыток данных
 		int temp;
 		iss >> temp;
 		if (!iss.fail())
@@ -91,10 +86,8 @@ Graph::Graph(const std::string& path, bool is_orient) : count_edges(0), count_ve
 
 Graph::~Graph() {}
 
-// Возвращает размер графа (т.е. количество вершин)
 size_t Graph::size() const { return count_vertex; }
 
-// Возвращает вес ребра
 int Graph::weight(int u, int v)
 {
 	if (is_edge(u, v))
@@ -103,7 +96,7 @@ int Graph::weight(int u, int v)
 	throw std::runtime_error("This edge is not found!");
 }
 
-// Проверка на существование ребра в графе
+
 bool Graph::is_edge(int u, int v)
 {
 	if (graph[u].find(v) != graph[u].end())
@@ -112,7 +105,6 @@ bool Graph::is_edge(int u, int v)
 	return false;
 }
 
-// Добавление вершины в граф
 void Graph::add_vertex(int u)
 {
 	if (graph.find(u) != graph.end()) return;
@@ -121,7 +113,7 @@ void Graph::add_vertex(int u)
 	++count_vertex;
 }
 
-// Добавление ребра в графе
+
 void Graph::add_edge(int u, int v, int w)
 {
 	add_vertex(u);
@@ -137,7 +129,6 @@ void Graph::add_edge(int u, int v, int w)
 	}
 }
 
-// Вывод списка ребер, инцидентных вершине
 void Graph::list_of_edges(int u)
 {
 	std::cout << "Vertex " << u << " -> ";
@@ -154,7 +145,7 @@ void Graph::list_of_edges(int u)
 	std::cout << std::endl;
 }
 
-// Вывод списка всех ребер
+
 void Graph::list_of_edges()
 {
 	if (!count_vertex)
@@ -184,8 +175,6 @@ std::vector<int> Graph::list_of_vertex() const
 	return result;
 }
 
-// Алгоритм Форда-Белламана для поиска 
-// наикратчайшего расстояния между двумя вершинами
 void Graph::FordBellman(int start)
 {
 	if (graph.find(start) == graph.end())
@@ -198,7 +187,6 @@ void Graph::FordBellman(int start)
 		int u, v, w;
 	};
 
-	// Создаем список ребер
 	std::vector<Edge> edges;
 	for (const auto& [u, eds] : graph)
 	{
@@ -227,7 +215,6 @@ void Graph::FordBellman(int start)
 		}
 	}
 
-	// Проверка на наличие отрицательного цикла:
 	for (const auto& [u, v, w] : edges)
 	{
 		if (dist[u] != INF && dist[v] > dist[u] + w)
@@ -237,7 +224,6 @@ void Graph::FordBellman(int start)
 			throw std::runtime_error("There is a negative cycle in the graph!");
 	}
 
-	// Вывод графа
 	for (const auto& [to, _] : graph)
 	{
 		std::cout << to << ": ";
@@ -246,7 +232,6 @@ void Graph::FordBellman(int start)
 	}
 }
 
-// Поиск минимального остовного дерева в неориентированном графе
 Graph Graph::MST_Prim()
 {
 	if (is_orient) throw std::runtime_error("This graph is directed!");
@@ -265,7 +250,6 @@ Graph Graph::MST_Prim()
 		std::pair<int, std::pair<int, int>>>
 	> pq;
 
-	// инициализация минимальной кучи
 	for (const auto& [v, w] : graph[start])
 	{
 		pq.push({ w, {start, v} });

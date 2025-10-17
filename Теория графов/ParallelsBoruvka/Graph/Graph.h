@@ -31,7 +31,7 @@ public:
 	void list_of_edges(int u);
 	std::vector<int> list_of_vertex() const;
 
-	// Специализация: 3b и 4b:
+	// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: 3b Рё 4b:
 	void FordBellman(int start);
 	Graph MST_Prim();
 };

@@ -63,14 +63,14 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
     ParallelsGraph MST(is_orient, thread_count);
     int curr_MST_edges_sum = 0;
 
-    // local_arena нужна для ограничения потоков
+    // local_arena РѕРіСЂР°РЅРёС‡РёРІР°РµС‚ С‡РёСЃР»Рѕ РїРѕС‚РѕРєРѕРІ
     tbb::task_arena local_arena(thread_count);
 
     tbb::concurrent_hash_map<int, tbb::concurrent_vector<int>> min_edges;
 
     while (dsu.count() > 1)
     {
-        // Лямбда-функция для параллельного добавления минимальных ребер
+        // С„СѓРЅРєС†РёСЏ РґР»СЏ РїРѕС‚РѕРєРѕР±РµР·РѕРїР°СЃРЅРѕР№ РІСЃС‚Р°РІРєРё РјРёРЅРёРјР°Р»СЊРЅС‹С… СЂРµР±РµСЂ
         auto concurrent_min_edges_processing = [&](const auto& vertex_pair) 
         {
             int v = vertex_pair.first;
@@ -83,7 +83,7 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
 
                 if (comp_u == comp_v) continue;
 
-                // Функция для атомарного обновления минимального ребра
+                // С„СѓРЅРєС†РёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РјРёРЅРёРјР°Р»СЊРЅС‹С… СЂРµР±РµСЂ
                 auto update_min_edge = [&](int comp) {
                     tbb::concurrent_hash_map<int, tbb::concurrent_vector<int>>::accessor acc;
 
@@ -102,12 +102,12 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
             }
         };
 
-        // Параллельно вычисляем минимальные ребра с строго ограниченным пулом потоков
+        // РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ С‡Р°СЃС‚СЊ СЃ РїР°СЂР°Р»Р»РµР»СЊРЅС‹Рј РґРѕР±Р°РІР»РµРЅРёРµРј РјРёРЅРёРјР°Р»СЊРЅС‹С… СЂРµР±РµСЂ
         local_arena.execute([&] {
             tbb::parallel_for_each(graph.begin(), graph.end(), concurrent_min_edges_processing);
         });
         
-        // Остальное параллелить нет смысла :)
+        // РѕСЃС‚Р°Р»СЊРЅРѕРµ РїР°СЂР°Р»Р»РµР»РёС‚СЊ РЅРµС‚ СЃРјС‹СЃР»Р° РІРІРёРґСѓ РёР·Р±С‹С‚РѕС‡РЅС‹С… РЅР°РєР»Р°РґРЅС‹С… СЂР°СЃС…РѕРґРѕРІ :)
         std::vector<std::tuple<int, int, int>> edges_to_add;
 
         for (auto it = min_edges.begin(); it != min_edges.end(); ++it) {
@@ -142,7 +142,7 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
 
     auto end = std::chrono::high_resolution_clock::now();
 
-    // Замерили время работы функции
+    // Р·Р°РјРµСЂСЏРµРј РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРѕРіСЂР°РјРјС‹
     auto new_duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     MST.SetDuration(new_duration);
     MST.SetEdgesSum(curr_MST_edges_sum);
