@@ -15,9 +15,12 @@
 
 #include <windows.h>
 #include <iostream>
+#include <vector>
+#include <string>
+
 using namespace std;           // Пространство имен std
 
-#include "Point.h"  //поменять в соответствии с задачей
+#include "Point.h"
 #include "Camera.h"
 
 //макрос для определения кода нажатой клавиши
@@ -31,6 +34,8 @@ HDC hdc; // Объявим контекст устройства
 // Контекст устройства это структура, содержащая
 // описание видеокарты на вашем компьютере
 // и всех необходимых графических элементов
+
+
 
 /****************************************************************/
 /*             О С Н О В Н А Я    П Р О Г Р А М М А             */
@@ -58,7 +63,7 @@ int main()
     //если дескриптор НЕ существует
     if (hwnd == NULL)
     {
-        cout << "Console Window Descriptor NOT FOUND !\n";
+        std::cout << "Console Window Descriptor NOT FOUND !\n";
         return 1; //ERROR
     }//if
 
@@ -70,9 +75,9 @@ int main()
     //если контекст НЕ существует
     if (hdc == 0)
     {
-        cout << "Handle Device Context NOT FOUND !\n";
+        std::cout << "Handle Device Context NOT FOUND !\n";
         return 2; //ERROR
-    }//if
+    }//if 
 
    //контекст существует - можем работать
 //===============================================================
@@ -102,27 +107,40 @@ int main()
             }
         }
     }
-    else if (command == 2)
-    {
-        Camera myCamera(x0, y0, Radius0);
+    else if (command == 2) {
+        std::cout << "\nExample ExOOP_0x START \n";
 
+        std::vector<Camera*> cameras;
 
-        myCamera.Show(); // Рисуем камеру со всеми элементами
-        getchar();
-        getchar();
+        // Создаем разнообразные камеры
+        cameras.push_back(new DSLRCamera(50, 50, "Canon EOS R5", 45.0, 2.8));
+        cameras.push_back(new SmartphoneCamera(250, 250, "iPhone 15 Pro", 48.0));
+        cameras.push_back(new ActionCamera(450, 450, "GoPro Hero 12", 27.0));
+        cameras.push_back(new Camera(650, 650, "Standard DSLR", 24.0));
 
-        myCamera.MoveTo(200, 150);
+        // Показываем все камеры
+        for (Camera* cam : cameras) {
+            cam->Show();
+        }
 
-        // Установка фокуса
-        myCamera.SetFocus(300, 200);
+        // Перетаскиваем каждую камеру по очереди
+        for (int i = 0; i < cameras.size(); ++i) {
+            cameras[i]->Drag(30); // Меньший шаг для более точного управления
+        }
 
-        // Включение режимов
-        myCamera.ToggleActive();
-        myCamera.StartRecording();
+        // Можно также показать коллизионные боксы
+        CollisionWrapper::DrawAllCollisionBoxes();
+
+        // Очистка
+        for (Camera* cam : cameras) {
+            delete cam;
+        }
+        cameras.clear();
     }
+
     
 
-    cout << "\nExample ExOOP_0x DONE   \7\n";
+    std::cout << "\nExample ExOOP_0x DONE   \7\n";
 
     //	К О Н Е Ц     В С Т А В К И
     //===============================================================

@@ -8,6 +8,7 @@
 
 using Position = std::pair<int, int>;
 using Element = std::pair<int, Position>;
+using Parent = std::vector<std::vector<Position>>;
 
 // Функция чтения матрицы из файла
 int ReadMatrix(const std::string& InputFile, 
@@ -79,19 +80,20 @@ int ReadMatrix(const std::string& InputFile,
 // Вспомогательная функция проверки принадлежности точки сетке
 bool isInMatrix(int n, int m, int x, int y)
 {
-	return (0 <= x && x < n) && (0 < y && y < m);
+	return (0 <= x && x < n) && (0 <= y && y < m);
 }
 
-// Выводит найденный путь
-void PathShow(const std::vector<std::vector<Position>>& parent, 
+// Функция вывода найденного пути
+void PathShow(std::ofstream& fout, 
+    const Parent& parent, 
     Position start, 
     Position end,
     std::string&& name)
 {
-    std::cout << name << " path:\n";
+    fout << name << " path:\n";
     if (start == end)
     {
-        std::cout << "(" << start.first << ", " << start.second << ")" << " ";
+        fout << "(" << start.first << ", " << start.second << ")" << " ";
         return;
     }
 
@@ -108,16 +110,17 @@ void PathShow(const std::vector<std::vector<Position>>& parent,
 
     for (const auto& [x, y] : path)
     {
-        std::cout << "(" << x << ", " << y << ")" << " ";
+        fout << "(" << x << ", " << y << ")" << " ";
     }
-    std::cout << std::endl;
+    fout << std::endl;
 }
 
 // Алгоритм Дейкстры
 int dijkstra(int n, int m,
     const std::vector<std::vector<int>>& mtr,
     Position start,
-    Position end)
+    Position end,
+    Parent& parent)
 {
     const int INF = 1e9;
     std::vector<std::vector<int>> dist(n, std::vector<int>(m, INF));
@@ -130,15 +133,10 @@ int dijkstra(int n, int m,
     std::vector<int> dx = { -1, 0, 1, 1, 1, 0, -1, -1 };
     std::vector<int> dy = { 1, 1, 1, 0, -1, -1, -1, 0 };
 
-    std::vector<std::vector<Position>> parent(n, std::vector<Position>(m, {-1, -1}));
-
     while (!min_set.empty())
     {
         auto pos = min_set.begin()->second;
         min_set.erase(min_set.begin());
-
-        // Если дошли до цели - можно прерваться досрочно
-        if (pos == end) break;
 
         for (int i = 0; i < 8; i++)
         {
@@ -164,16 +162,16 @@ int dijkstra(int n, int m,
 
     if (dist[end.first][end.second] == INF) return -1;
 
-    PathShow(parent, start, end, "Dijkstra");
-
     return dist[end.first][end.second];
 }
 
+// Алгоритм А*
 template <typename Func>
 int A_star(int n, int m,
     const std::vector<std::vector<int>>& mtr,
     Position start,
     Position end,
+    Parent& parent,
     Func h)
 {
     const int INF = 1e9;
@@ -190,8 +188,6 @@ int A_star(int n, int m,
     std::vector<int> dx = { -1, 0, 1, 1, 1, 0, -1, -1 };
     std::vector<int> dy = { 1, 1, 1, 0, -1, -1, -1, 0 };
 
-    std::vector<std::vector<Position>> parent(n, std::vector<Position>(m, { -1, -1 }));
-
     while (!min_set.empty())
     {
         auto it = min_set.begin();
@@ -200,7 +196,6 @@ int A_star(int n, int m,
 
         if (pos == end)
         {
-            PathShow(parent, start, end, "A*");
             return g[pos.first][pos.second];
         }
 
@@ -230,6 +225,17 @@ int A_star(int n, int m,
     }
 
     return -1;
+}
+
+template <typename Func, typename... Args>
+decltype(auto) TimeDuration(Func f, int& dist, Args&&... args)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    dist = f(args...);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    return duration;
 }
 
 int main(int argc, char* argv[])
@@ -314,28 +320,36 @@ int main(int argc, char* argv[])
                 return std::max(std::abs(current.first - goal.first), std::abs(current.second - goal.second));
             };
 
-        auto dijkstra_start = std::chrono::high_resolution_clock::now();
-        auto dijkstra_dist = dijkstra(n, m, mtr, start, end);
-        auto dijkstra_end = std::chrono::high_resolution_clock::now();
+        Parent dijkstra_parent(n, std::vector<Position>(m, { -1, -1 }));
+        Parent a_star_parent(n, std::vector<Position>(m, { -1, -1 }));
 
-        auto a_star_start = std::chrono::high_resolution_clock::now();
-        auto a_star_dist = A_star(n, m, mtr, start, end, ChebyshevsHeuristic);
-        auto a_star_end = std::chrono::high_resolution_clock::now();
+        int dijkstra_dist = -1, a_star_dist = -1;
 
-        auto dijkstra_duration = std::chrono::duration_cast<std::chrono::milliseconds>(dijkstra_end - dijkstra_start);
-        auto a_star_duration = std::chrono::duration_cast<std::chrono::milliseconds>(a_star_end - a_star_start);
+        auto dijkstra_duration = TimeDuration(dijkstra, dijkstra_dist, n, m, mtr, start, end, dijkstra_parent);
+        auto a_star_duration = TimeDuration(A_star<decltype(ChebyshevsHeuristic)>, a_star_dist, 
+            n, m, mtr, start, end, a_star_parent, ChebyshevsHeuristic);
+
+        std::ofstream fout(outputFile);
 
         if (dijkstra_dist == -1)
-            std::cout << "Dijkstra's algorithm: Path is not found!\n";
+            fout << "Dijkstra's algorithm: Path is not found!\n";
         else
-            std::cout << "Dijkstra's algorithm: Path's size: " << dijkstra_dist << "\n";
+        {
+            fout << "Dijkstra's algorithm: Path's size: " << dijkstra_dist << "\n";
+            PathShow(fout, dijkstra_parent, start, end, "Dijkstra's algorithm");
+        }
         if (a_star_dist == -1) 
-            std::cout << "A*: Path is not found!\n\n";
+            fout << "A* algorithm: Path is not found!\n";
         else
-            std::cout << "A*: Path's size: " << a_star_dist << "\n\n";
+        {
+            fout << "A* algorithm: Path's size: " << a_star_dist << "\n";
+            PathShow(fout, a_star_parent, start, end, "A* algorithm");
+        }
 
-        std::cout << "Running time of Dijkstra's algorithm: " << dijkstra_duration.count() << " .ms\n";
-        std::cout << "Running time of A*: " << a_star_duration.count() << " .ms\n\n";
+        fout << "Running time of Dijkstra's algorithm: " << dijkstra_duration.count() << " .ms\n";
+        fout << "Running time of A* algorithm: " << a_star_duration.count() << " .ms\n";
+
+        fout.close();
     }
     catch (const std::exception& e) {
         std::cerr << "Error processing graph: " << e.what() << std::endl;
