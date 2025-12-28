@@ -83,6 +83,20 @@ bool isInMatrix(int n, int m, int x, int y)
 	return (0 <= x && x < n) && (0 <= y && y < m);
 }
 
+int vertex_count(const std::vector<std::vector<int>>& mtr)
+{
+    int counter = 0;
+    for (const auto& vec : mtr)
+    {
+        for (const auto elem : vec)
+        {
+            if (elem != 0) ++counter;
+        }
+    }
+
+    return counter;
+}
+
 // Функция вывода найденного пути
 void PathShow(std::ofstream& fout, 
     const Parent& parent, 
@@ -120,7 +134,9 @@ int dijkstra(int n, int m,
     const std::vector<std::vector<int>>& mtr,
     Position start,
     Position end,
-    Parent& parent)
+    Parent& parent,
+    double& used
+)
 {
     const int INF = 1e9;
     std::vector<std::vector<int>> dist(n, std::vector<int>(m, INF));
@@ -137,6 +153,7 @@ int dijkstra(int n, int m,
     {
         auto pos = min_set.begin()->second;
         min_set.erase(min_set.begin());
+        used++;
 
         for (int i = 0; i < 8; i++)
         {
@@ -172,6 +189,7 @@ int A_star(int n, int m,
     Position start,
     Position end,
     Parent& parent,
+    double& used,
     Func h)
 {
     const int INF = 1e9;
@@ -193,6 +211,7 @@ int A_star(int n, int m,
         auto it = min_set.begin();
         auto pos = it->second;
         min_set.erase(it);
+        used++;
 
         if (pos == end)
         {
@@ -233,7 +252,7 @@ decltype(auto) TimeDuration(Func f, int& dist, Args&&... args)
     auto start = std::chrono::high_resolution_clock::now();
     dist = f(args...);
     auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
     return duration;
 }
@@ -323,11 +342,13 @@ int main(int argc, char* argv[])
         Parent dijkstra_parent(n, std::vector<Position>(m, { -1, -1 }));
         Parent a_star_parent(n, std::vector<Position>(m, { -1, -1 }));
 
+        const double count = vertex_count(mtr);
         int dijkstra_dist = -1, a_star_dist = -1;
+        double dijkstra_vertex = 0, a_star_vertex = 0;
 
-        auto dijkstra_duration = TimeDuration(dijkstra, dijkstra_dist, n, m, mtr, start, end, dijkstra_parent);
+        auto dijkstra_duration = TimeDuration(dijkstra, dijkstra_dist, n, m, mtr, start, end, dijkstra_parent, dijkstra_vertex);
         auto a_star_duration = TimeDuration(A_star<decltype(ChebyshevsHeuristic)>, a_star_dist, 
-            n, m, mtr, start, end, a_star_parent, ChebyshevsHeuristic);
+            n, m, mtr, start, end, a_star_parent, a_star_vertex, ChebyshevsHeuristic);
 
         std::ofstream fout(outputFile);
 
@@ -349,7 +370,13 @@ int main(int argc, char* argv[])
         fout << "Running time of Dijkstra's algorithm: " << dijkstra_duration.count() << " .ms\n";
         fout << "Running time of A* algorithm: " << a_star_duration.count() << " .ms\n";
 
+        fout << "Vertexes climbed (Dijkstra's algorithm): " << (dijkstra_vertex / count)*100 << "% \n";
+        fout << "Vertexes climbed (A* algorithm): " << (a_star_vertex / count)*100 << "% \n";
+
         fout.close();
+
+        std::cout << "Input file: " << inputFile << std::endl;
+        std::cout << "Output file: " << outputFile << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "Error processing graph: " << e.what() << std::endl;

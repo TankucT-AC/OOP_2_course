@@ -16,7 +16,7 @@ void print_table_header() {
 	std::cout << std::left;
 	std::cout << std::setw(10) << "Алгоритм" << "   | "
 		<< std::right << std::setw(8) << "Размер" << "   | "
-		<< std::right << std::setw(12) << "Время(мкс)" << "   | "
+		<< std::right << std::setw(12) << "Время(мс)" << "   | "
 		<< std::setw(12) << "Counter1" << " | "
 		<< std::setw(12) << "Counter2" << "\n";
 
@@ -48,29 +48,42 @@ auto TimeDuration(Func f, Args&&... args)
 	auto start = std::chrono::high_resolution_clock::now();
 	f(args...);
 	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
 	return duration;
 }
 
+template <typename T>
+void mySwap(T& _elem1, T& _elem2)
+{
+	T temp = _elem1;
+	_elem1 = _elem2;
+	_elem2 = temp;
+}
 
 void InsertionSort(std::vector<int>& vec, const int n, ll& counter1, ll& counter2)
 {
 	for (int i = 1; i < n; ++i)
 	{
-		++counter1;
-		int curr = i;
-		int prev = i - 1;
-		while (curr > 0 && vec[prev] > vec[curr])
+		int current = vec[i];
+		int j = i - 1;
+
+		while (j >= 0 && vec[j] > current)
 		{
 			++counter1;
-			++counter2;
-			std::swap(vec[prev], vec[curr]);
-			prev--;
-			curr--;
+			vec[j + 1] = vec[j];
+			--j;
 		}
-		++counter1;
+
+		vec[j + 1] = current;
 		++counter2;
+		++counter1;
+
+		for (int i = 0; i < n; ++i)
+		{
+			std::cout << vec[i] << " ";
+		}
+		std::cout << std::endl;
 	}
 }
 
@@ -97,7 +110,7 @@ int partition(std::vector<int>& vec, int left, int right, ll& counter1, ll& coun
 		++counter1;
 		if (i > j) break;
 
-		std::swap(vec[i], vec[j]);
+		mySwap(vec[i], vec[j]);
 		++counter2;
 
 		++i;
@@ -135,13 +148,22 @@ int main()
     // Счётчики (counter1 и counter2)
     std::vector<std::pair<ll, ll>> counters(2, { 0, 0 });
 
+	std::vector<int> ins_vec(vec.begin(), vec.begin() + 20);
+	for (int i = 0; i < 20; ++i)
+	{
+		std::cout << ins_vec[i] << " ";
+	}
+	std::cout << std::endl;
+	InsertionSort(ins_vec, 20, counters[0].first, counters[0].second);
+
     for (const int size : SIZES)
     {
 		std::vector<int> InsertionVec(vec.begin(), vec.begin() + size);
 		std::vector<int> QuickVec(vec.begin(), vec.begin() + size);
 
 		// Замер времени работы алгоритмов поиска
-		auto time_Insertion = TimeDuration(InsertionSort, InsertionVec, size, counters[0].first, counters[0].second);
+		auto time_Insertion = TimeDuration(InsertionSort, InsertionVec, size, 
+			counters[0].first, counters[0].second);
 		auto time_Quick = TimeDuration(QuickSort, QuickVec, 0, size - 1, // потому что [left, right]
 			counters[1].first, counters[1].second);
 

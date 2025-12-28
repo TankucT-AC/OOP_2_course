@@ -118,12 +118,7 @@ ParallelsGraph ParallelsGraph::MST_BoruvkaParallels()
             int v = edge_vec[1];
             int w = edge_vec[2];
 
-            int comp_u = dsu.find_set(u);
-            int comp_v = dsu.find_set(v);
-
-            if (comp_u != comp_v) {
-                edges_to_add.emplace_back(u, v, w);
-            }
+            edges_to_add.emplace_back(u, v, w);
         }
 
         for (auto& [u, v, w] : edges_to_add) {

@@ -6,6 +6,7 @@
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 
 extern HDC hdc;
+extern HDC memDC;
 
 // Реализация для Location
 void Location::SetX(int NewX) { X = NewX; }
@@ -23,8 +24,8 @@ void Point::Show()
 {
     visible = true;
     HPEN pen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
-    SelectObject(hdc, pen);
-    Ellipse(hdc, X - 3, Y - 3, X + 3, Y + 3);
+    SelectObject(memDC, pen);
+    Ellipse(memDC, X - 3, Y - 3, X + 3, Y + 3);
     DeleteObject(pen);
 }
 
@@ -32,8 +33,8 @@ void Point::Hide()
 {
     visible = false;
     HPEN pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));
-    SelectObject(hdc, pen);
-    Ellipse(hdc, X - 3, Y - 3, X + 3, Y + 3);
+    SelectObject(memDC, pen);
+    Ellipse(memDC, X - 3, Y - 3, X + 3, Y + 3);
     DeleteObject(pen);
 }
 
@@ -50,41 +51,34 @@ void Point::Drag(int Step)
 {
     int FigX = GetX(), FigY = GetY();
 
-    while (true)
-    {
+    while (true) {
         if (KEY_DOWN(VK_SPACE))
         {
             Sleep(500);
             break;
         }
 
+        int newX = FigX;
+        int newY = FigY;
+
         if (KEY_DOWN(VK_LEFT))
         {
-            FigX -= Step;
-            MoveTo(FigX, FigY);
-            Sleep(50);
+            newX -= Step;
         }
-
         if (KEY_DOWN(VK_RIGHT))
         {
-            FigX += Step;
-            MoveTo(FigX, FigY);
-            Sleep(50);
+            newX += Step;
         }
-
         if (KEY_DOWN(VK_UP))
         {
-            FigY -= Step;
-            MoveTo(FigX, FigY);
-            Sleep(50);
+            newY -= Step;
         }
-
         if (KEY_DOWN(VK_DOWN))
         {
-            FigY += Step;
-            MoveTo(FigX, FigY);
-            Sleep(50);
+            newY += Step;
         }
+
+        Sleep(50);
     }
 }
 
@@ -98,9 +92,9 @@ void Circle::Show()
     visible = true;
     HPEN redPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
     HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));
-    SelectObject(hdc, redPen);
-    SelectObject(hdc, redBrush);
-    Ellipse(hdc, X - radius, Y - radius, X + radius, Y + radius);
+    SelectObject(memDC, redPen);
+    SelectObject(memDC, redBrush);
+    Ellipse(memDC, X - radius, Y - radius, X + radius, Y + radius);
     DeleteObject(redPen);
     DeleteObject(redBrush);
 }
@@ -111,9 +105,9 @@ void Circle::Hide()
     visible = false;
     HPEN clearPen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));
     HBRUSH clearBrush = CreateSolidBrush(RGB(255, 255, 255));
-    SelectObject(hdc, clearPen);
-    SelectObject(hdc, clearBrush);
-    Ellipse(hdc, X - radius, Y - radius, X + radius, Y + radius);
+    SelectObject(memDC, clearPen);
+    SelectObject(memDC, clearBrush);
+    Ellipse(memDC, X - radius, Y - radius, X + radius, Y + radius);
     DeleteObject(clearPen);
     DeleteObject(clearBrush);
 }

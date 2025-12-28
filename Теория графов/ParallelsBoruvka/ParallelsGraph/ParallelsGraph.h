@@ -21,4 +21,18 @@ public:
 	void SetEdgesSum(int new_sum);
 	void SetDuration(std::chrono::microseconds duration);
 	void write_graph(const std::string& out);
+
+	std::vector<std::tuple<int, int, int>> getAllEdges()
+	{
+		std::vector<std::tuple<int, int, int>> result;
+		for (const auto& [u, edges] : graph)
+		{
+			for (const auto& [v, w] : graph[u])
+			{
+				result.emplace_back(u, v, w);
+			}
+		}
+
+		return result;
+	}
 };
