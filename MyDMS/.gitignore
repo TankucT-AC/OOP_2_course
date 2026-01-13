@@ -1,0 +1,13 @@
+# Текстовый файл
+airplanes.txt
+
+# Папки
+.vs
+MyDMS
+x64
+
+# Файлы Visual Studio
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
